@@ -25,9 +25,9 @@ sudoku(Rows, Cols) :-
     subRows(R7, R8, R9).
 
 subRows([], [], []).  % base case
-subRows([e1, e2, e3 | remain1],　//Remain1
-        [e4, e5, e6 | remain2],  //Remain2
-        [e7, e8, e9 | remain3]) :- //Remain3
-            all_distinct([e1, e2, e3, e4, e5, e6, e7, e8, e9]), //E1, E2, E3, E4, E5, E6, E7, E8, E9
-            subRows(remain1, remain2, remain3). //Remain1, Remain2, Remain3
+subRows([e1, e2, e3 | Remain1],　
+        [e4, e5, e6 | Remain2], 
+        [e7, e8, e9 | Remain3]) :-
+            all_distinct([E1, E2, E3, E4, E5, E6, E7, E8, E9]), 
+            subRows(Remain1, Remain2, Remain3).
 
