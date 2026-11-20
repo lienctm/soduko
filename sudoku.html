@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Prolog Sudoku Solver</title>
+  <title>Sudoku Game</title>
 
   <style>
     * {
@@ -15,127 +15,363 @@
       min-height: 100vh;
       display: grid;
       place-items: center;
-      padding: 30px 15px;
-      background: #eef4ff;
-      color: #172033;
-      font-family: Arial, sans-serif;
+      padding: 24px;
+      background: white;
+      color: #111;
+      font-family: "Comic Sans MS", "Trebuchet MS", sans-serif;
     }
 
-    main {
-      width: min(100%, 620px);
+    .screen {
+      width: min(100%, 1120px);
+    }
+
+    .card {
+      border: 3px solid #111;
+      padding: 42px;
       background: white;
-      padding: 35px;
-      border-radius: 20px;
-      box-shadow: 0 10px 40px #203a6830;
+    }
+
+    #welcome {
+      max-width: 560px;
+      text-align: center;
     }
 
     h1 {
-      margin-top: 0;
-      text-align: center;
+      margin: 0 0 48px;
+      font-size: clamp(30px, 5vw, 54px);
+      font-weight: 600;
     }
 
-    .subtitle {
-      text-align: center;
-      color: #63708a;
+    h2 {
+      margin: 0 0 28px;
+      font-size: 30px;
     }
 
-    .board {
-      width: min(100%, 486px);
-      aspect-ratio: 1;
-      margin: 25px auto;
-      display: grid;
-      grid-template-columns: repeat(9, 1fr);
-      border: 3px solid #172033;
-    }
-
-    input {
-      width: 100%;
-      aspect-ratio: 1;
-      border: 1px solid #cbd5e1;
-      background: white;
-      text-align: center;
+    label {
+      display: block;
       font-size: 25px;
-      outline: none;
+      margin-bottom: 14px;
     }
 
-    input:focus {
-      background: #eaf2ff;
-      box-shadow: inset 0 0 0 3px #4f7cff;
-    }
-
-    input.solved {
-      color: #315fd4;
-    }
-
-    input:nth-child(3n) {
-      border-right: 3px solid #172033;
-    }
-
-    input:nth-child(n+19):nth-child(-n+27),
-    input:nth-child(n+46):nth-child(-n+54) {
-      border-bottom: 3px solid #172033;
-    }
-
-    .actions {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
+    input[type="text"] {
+      width: min(100%, 300px);
+      border: 3px solid #111;
+      padding: 11px 14px;
+      font: inherit;
+      font-size: 22px;
+      text-align: center;
     }
 
     button {
-      border: 0;
-      border-radius: 10px;
-      padding: 12px 20px;
-      font-size: 16px;
-      font-weight: bold;
+      border: 3px solid #111;
+      background: white;
+      padding: 9px 24px;
+      font: inherit;
+      font-size: 20px;
       cursor: pointer;
     }
 
-    #solve {
-      background: #315fd4;
+    button:hover,
+    button.active {
+      background: #111;
       color: white;
     }
 
-    #clear {
-      background: #e9eef7;
-      color: #27344d;
+    #submitName {
+      display: block;
+      margin: 22px auto 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .game-header h2 {
+      margin: 0;
+    }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: minmax(420px, 560px) 220px;
+      gap: 55px;
+      align-items: start;
+    }
+
+    .levels {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 22px;
+      font-size: 22px;
+    }
+
+    .levels button {
+      font-size: 17px;
+      padding: 6px 13px;
+    }
+
+    #board {
+      width: min(100%, 540px);
+      aspect-ratio: 1;
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      border: 4px solid #111;
+      background: #111;
+    }
+
+    #board input {
+      width: 100%;
+      aspect-ratio: 1;
+      border: 1px solid #777;
+      background: white;
+      text-align: center;
+      font: 22px Arial, sans-serif;
+      outline: none;
+    }
+
+    #board input.given {
+      background: #eee;
+      font-weight: bold;
+    }
+
+    #board input.user {
+      color: #164fb8;
+    }
+
+    #board input:focus {
+      background: #dceaff;
+    }
+
+    #board input:nth-child(3n) {
+      border-right: 3px solid #111;
+    }
+
+    #board input:nth-child(n+19):nth-child(-n+27),
+    #board input:nth-child(n+46):nth-child(-n+54) {
+      border-bottom: 3px solid #111;
+    }
+
+    .game-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .game-actions button {
+      font-size: 17px;
+    }
+
+    #check {
+      background: #111;
+      color: white;
+    }
+
+    .rank {
+      border-left: 2px solid #111;
+      padding-left: 28px;
+      font-family: Arial, sans-serif;
+    }
+
+    .rank h3 {
+      margin: 0 0 24px;
+      font-size: 24px;
+      text-decoration: underline;
+    }
+
+    .rank p {
+      margin: 14px 0;
+      font-size: 18px;
     }
 
     #status {
-      text-align: center;
-      color: #63708a;
+      min-height: 26px;
+      margin: 16px 0 0;
+      font: 18px Arial, sans-serif;
     }
 
-    #status.error {
-      color: #c43d48;
+    .success {
+      color: #147a37;
+    }
+
+    .error {
+      color: #b32635;
+    }
+
+    @media (max-width: 800px) {
+      .game-layout {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .rank {
+        border-left: 0;
+        border-top: 2px solid #111;
+        padding: 20px 0 0;
+      }
+
+      .card {
+        padding: 24px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <main>
-    <h1>Prolog Sudoku Solver</h1>
 
-    <p class="subtitle">
-      Enter numbers from 1 to 9, then click Solve.
-    </p>
+  <!-- Nickname screen -->
+  <section id="welcome" class="screen card">
+    <h1>Welcome to Sudoku Game</h1>
 
-    <section id="board" class="board"></section>
+    <label for="nickname">Enter your nickname</label>
 
-    <div class="actions">
-      <button id="solve" type="button">Solve puzzle</button>
-      <button id="clear" type="button">Clear</button>
+    <input
+      id="nickname"
+      type="text"
+      maxlength="15"
+      placeholder="Your name"
+    >
+
+    <button id="submitName" type="button">
+      Submit
+    </button>
+
+    <p id="welcomeError" class="error"></p>
+  </section>
+
+
+  <!-- Game screen -->
+  <section id="game" class="screen card hidden">
+
+    <div class="game-header">
+      <h2>
+        Welcome <span id="playerName"></span>
+      </h2>
+
+      <button id="changePlayer" type="button">
+        Change player
+      </button>
     </div>
 
-    <p id="status">Ready.</p>
-  </main>
+
+    <div class="game-layout">
+
+      <div>
+
+        <div class="levels">
+          <strong>Level:</strong>
+
+          <button data-level="easy" type="button">
+            Easy
+          </button>
+
+          <button data-level="medium" type="button">
+            Medium
+          </button>
+
+          <button data-level="hard" type="button">
+            Hard
+          </button>
+        </div>
+
+
+        <div id="board" aria-label="Sudoku board"></div>
+
+
+        <div class="game-actions">
+          <button id="check" type="button">
+            Check answer
+          </button>
+
+          <button id="reveal" type="button">
+            Reveal solution
+          </button>
+
+          <button id="clear" type="button">
+            Clear
+          </button>
+        </div>
+
+        <p id="status">
+          Choose a level to start playing.
+        </p>
+
+      </div>
+
+
+      <aside class="rank">
+        <h3>Rank:</h3>
+
+        <p>A &nbsp; 32 points</p>
+        <p>B &nbsp; 30 points</p>
+        <p id="playerRank">You &nbsp; 0 points</p>
+      </aside>
+
+    </div>
+  </section>
+
 
   <script>
+
+    const puzzles = {
+
+      easy: [
+        [7, 4, 1, 8, 2, 5, 0, 9, 0],
+        [0, 0, 5, 0, 3, 9, 0, 0, 7],
+        [2, 0, 9, 6, 7, 0, 8, 0, 1],
+        [0, 1, 2, 9, 0, 0, 6, 8, 0],
+        [3, 6, 8, 4, 1, 0, 0, 0, 0],
+        [0, 0, 7, 3, 0, 8, 1, 0, 0],
+        [5, 2, 3, 7, 9, 6, 4, 0, 0],
+        [0, 7, 6, 2, 4, 1, 9, 3, 5],
+        [1, 9, 0, 5, 8, 3, 0, 6, 0]
+      ],
+
+      medium: [
+        [0, 9, 0, 1, 3, 2, 7, 6, 5],
+        [7, 1, 5, 0, 4, 6, 0, 3, 2],
+        [0, 2, 3, 5, 0, 0, 4, 1, 0],
+        [0, 0, 0, 0, 9, 3, 0, 4, 0],
+        [0, 7, 9, 0, 0, 0, 0, 0, 6],
+        [4, 6, 1, 0, 8, 5, 0, 9, 3],
+        [0, 5, 0, 0, 0, 0, 0, 2, 9],
+        [2, 0, 0, 0, 5, 0, 0, 7, 1],
+        [0, 0, 0, 0, 1, 0, 0, 0, 4]
+      ],
+
+      hard: [
+        [2, 1, 0, 0, 8, 0, 0, 4, 0],
+        [5, 4, 0, 0, 9, 0, 0, 0, 8],
+        [7, 6, 8, 0, 0, 5, 0, 2, 0],
+        [0, 7, 0, 0, 5, 0, 0, 0, 1],
+        [8, 3, 0, 0, 0, 0, 0, 0, 7],
+        [0, 9, 5, 0, 4, 7, 2, 3, 0],
+        [0, 0, 0, 5, 0, 0, 0, 6, 2],
+        [0, 5, 7, 0, 6, 3, 0, 1, 4],
+        [0, 0, 6, 0, 0, 0, 0, 0, 0]
+      ]
+
+    };
+
+
     const board = document.querySelector("#board");
     const status = document.querySelector("#status");
-    const solveButton = document.querySelector("#solve");
+
+    let currentPuzzle = null;
+    let currentLevel = null;
+
 
     function buildBoard() {
+      board.replaceChildren();
+
       for (let i = 0; i < 81; i++) {
         const cell = document.createElement("input");
 
@@ -148,83 +384,205 @@
             .replace(/[^1-9]/g, "")
             .slice(0, 1);
 
-          cell.classList.remove("solved");
+          cell.classList.add("user");
         });
 
-        board.appendChild(cell);
+        board.append(cell);
       }
     }
+
+
+    function loadLevel(level) {
+      currentLevel = level;
+      currentPuzzle = puzzles[level];
+
+      [...board.children].forEach((cell, i) => {
+        const row = Math.floor(i / 9);
+        const col = i % 9;
+        const value = currentPuzzle[row][col];
+
+        cell.value = value || "";
+        cell.className = value ? "given" : "";
+      });
+
+      document
+        .querySelectorAll("[data-level]")
+        .forEach(button => {
+          button.classList.toggle(
+            "active",
+            button.dataset.level === level
+          );
+        });
+
+      status.textContent =
+        `Playing ${level}. Fill in the empty cells.`;
+
+      status.className = "";
+    }
+
 
     function readGrid() {
-      const grid = [];
-
-      for (let row = 0; row < 9; row++) {
-        const currentRow = [];
-
-        for (let col = 0; col < 9; col++) {
-          const index = row * 9 + col;
-          currentRow.push(Number(board.children[index].value) || 0);
+      return [...board.children].reduce((rows, cell, i) => {
+        if (i % 9 === 0) {
+          rows.push([]);
         }
 
-        grid.push(currentRow);
-      }
+        rows.at(-1).push(Number(cell.value) || 0);
 
-      return grid;
+        return rows;
+      }, []);
     }
 
-    solveButton.addEventListener("click", async () => {
-      solveButton.disabled = true;
-      status.textContent = "Prolog is solving...";
-      status.className = "";
 
-      try {
-        const response = await fetch("/solve", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            grid: readGrid()
-          })
-        });
+    async function getSolution() {
+      const response = await fetch("/solve", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          grid: readGrid()
+        })
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (!response.ok || data.status !== "success") {
-          throw new Error(data.message || "No solution found.");
+      if (!response.ok || data.status !== "success") {
+        throw new Error("There is a conflict in your answers.");
+      }
+
+      return data.grid;
+    }
+
+
+    document
+      .querySelector("#submitName")
+      .addEventListener("click", () => {
+
+        const name =
+          document.querySelector("#nickname").value.trim();
+
+        if (!name) {
+          document.querySelector("#welcomeError").textContent =
+            "Please enter a nickname.";
+
+          return;
         }
 
-        for (let i = 0; i < 81; i++) {
-          const row = Math.floor(i / 9);
-          const col = i % 9;
+        document.querySelector("#playerName").textContent = name;
 
-          if (!board.children[i].value) {
-            board.children[i].classList.add("solved");
+        document.querySelector("#welcome")
+          .classList.add("hidden");
+
+        document.querySelector("#game")
+          .classList.remove("hidden");
+
+        buildBoard();
+      });
+
+
+    document
+      .querySelector("#nickname")
+      .addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          document.querySelector("#submitName").click();
+        }
+      });
+
+
+    document
+      .querySelectorAll("[data-level]")
+      .forEach(button => {
+        button.addEventListener("click", () => {
+          loadLevel(button.dataset.level);
+        });
+      });
+
+
+    document
+      .querySelector("#check")
+      .addEventListener("click", async () => {
+
+        if (!currentPuzzle) {
+          status.textContent = "Choose a level first.";
+          return;
+        }
+
+        try {
+          const solution = await getSolution();
+          const grid = readGrid();
+
+          const complete = grid.every((row, r) =>
+            row.every((value, c) => value === solution[r][c])
+          );
+
+          if (complete) {
+            status.textContent = "Correct! Great job!";
+            status.className = "success";
+
+            document.querySelector("#playerRank").textContent =
+              "You   10 points";
+          } else {
+            status.textContent =
+              "So far so good, but keep going!";
+            status.className = "";
           }
 
-          board.children[i].value = data.grid[row][col];
+        } catch (error) {
+          status.textContent = error.message;
+          status.className = "error";
+        }
+      });
+
+
+    document
+      .querySelector("#reveal")
+      .addEventListener("click", async () => {
+
+        if (!currentPuzzle) {
+          return;
         }
 
-        status.textContent = "Solved successfully by Prolog.";
-      } catch (error) {
-        status.textContent = error.message;
-        status.className = "error";
-      }
+        try {
+          const solution = await getSolution();
 
-      solveButton.disabled = false;
-    });
+          [...board.children].forEach((cell, i) => {
+            const row = Math.floor(i / 9);
+            const col = i % 9;
 
-    document.querySelector("#clear").addEventListener("click", () => {
-      for (const cell of board.children) {
-        cell.value = "";
-        cell.className = "";
-      }
+            cell.value = solution[row][col];
+            cell.classList.add("user");
+          });
 
-      status.textContent = "Ready.";
-      status.className = "";
-    });
+          status.textContent = "Solution revealed.";
 
-    buildBoard();
+        } catch (error) {
+          status.textContent = error.message;
+          status.className = "error";
+        }
+      });
+
+
+    document
+      .querySelector("#clear")
+      .addEventListener("click", () => {
+        if (currentLevel) {
+          loadLevel(currentLevel);
+        }
+      });
+
+
+    document
+      .querySelector("#changePlayer")
+      .addEventListener("click", () => {
+        document.querySelector("#game")
+          .classList.add("hidden");
+
+        document.querySelector("#welcome")
+          .classList.remove("hidden");
+      });
+
   </script>
+
 </body>
 </html>
