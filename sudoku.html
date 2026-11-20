@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Prolog Sudoku Solver</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 30px 15px;
+      background: #eef4ff;
+      color: #172033;
+      font-family: Arial, sans-serif;
+    }
+
+    main {
+      width: min(100%, 620px);
+      background: white;
+      padding: 35px;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px #203a6830;
+    }
+
+    h1 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #63708a;
+    }
+
+    .board {
+      width: min(100%, 486px);
+      aspect-ratio: 1;
+      margin: 25px auto;
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      border: 3px solid #172033;
+    }
+
+    input {
+      width: 100%;
+      aspect-ratio: 1;
+      border: 1px solid #cbd5e1;
+      background: white;
+      text-align: center;
+      font-size: 25px;
+      outline: none;
+    }
+
+    input:focus {
+      background: #eaf2ff;
+      box-shadow: inset 0 0 0 3px #4f7cff;
+    }
+
+    input.solved {
+      color: #315fd4;
+    }
+
+    input:nth-child(3n) {
+      border-right: 3px solid #172033;
+    }
+
+    input:nth-child(n+19):nth-child(-n+27),
+    input:nth-child(n+46):nth-child(-n+54) {
+      border-bottom: 3px solid #172033;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #solve {
+      background: #315fd4;
+      color: white;
+    }
+
+    #clear {
+      background: #e9eef7;
+      color: #27344d;
+    }
+
+    #status {
+      text-align: center;
+      color: #63708a;
+    }
+
+    #status.error {
+      color: #c43d48;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>Prolog Sudoku Solver</h1>
+
+    <p class="subtitle">
+      Enter numbers from 1 to 9, then click Solve.
+    </p>
+
+    <section id="board" class="board"></section>
+
+    <div class="actions">
+      <button id="solve" type="button">Solve puzzle</button>
+      <button id="clear" type="button">Clear</button>
+    </div>
+
+    <p id="status">Ready.</p>
+  </main>
+
+  <script>
+    const board = document.querySelector("#board");
+    const status = document.querySelector("#status");
+    const solveButton = document.querySelector("#solve");
+
+    function buildBoard() {
+      for (let i = 0; i < 81; i++) {
+        const cell = document.createElement("input");
+
+        cell.type = "text";
+        cell.inputMode = "numeric";
+        cell.maxLength = 1;
+
+        cell.addEventListener("input", () => {
+          cell.value = cell.value
+            .replace(/[^1-9]/g, "")
+            .slice(0, 1);
+
+          cell.classList.remove("solved");
+        });
+
+        board.appendChild(cell);
+      }
+    }
+
+    function readGrid() {
+      const grid = [];
+
+      for (let row = 0; row < 9; row++) {
+        const currentRow = [];
+
+        for (let col = 0; col < 9; col++) {
+          const index = row * 9 + col;
+          currentRow.push(Number(board.children[index].value) || 0);
+        }
+
+        grid.push(currentRow);
+      }
+
+      return grid;
+    }
+
+    solveButton.addEventListener("click", async () => {
+      solveButton.disabled = true;
+      status.textContent = "Prolog is solving...";
+      status.className = "";
+
+      try {
+        const response = await fetch("/solve", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            grid: readGrid()
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.status !== "success") {
+          throw new Error(data.message || "No solution found.");
+        }
+
+        for (let i = 0; i < 81; i++) {
+          const row = Math.floor(i / 9);
+          const col = i % 9;
+
+          if (!board.children[i].value) {
+            board.children[i].classList.add("solved");
+          }
+
+          board.children[i].value = data.grid[row][col];
+        }
+
+        status.textContent = "Solved successfully by Prolog.";
+      } catch (error) {
+        status.textContent = error.message;
+        status.className = "error";
+      }
+
+      solveButton.disabled = false;
+    });
+
+    document.querySelector("#clear").addEventListener("click", () => {
+      for (const cell of board.children) {
+        cell.value = "";
+        cell.className = "";
+      }
+
+      status.textContent = "Ready.";
+      status.className = "";
+    });
+
+    buildBoard();
+  </script>
+</body>
+</html>
