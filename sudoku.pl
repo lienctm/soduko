@@ -4,9 +4,12 @@
 :- use_module(library(http/http_json)).
 :- use_module(library(http/http_files)).
 
+% Define routes
 :- http_handler(root(.), home, []).
 :- http_handler(root(solve), solve_handler, [method(post)]).
+:- http_handler(root('style.css'), style_handler, []).
 
+% Inititalize the http server on port 8080
 :- initialization(server(8080), main).
 
 server(Port) :-
@@ -14,10 +17,12 @@ server(Port) :-
     format('Sudoku Solver is running at http://localhost:~w/~n', [Port]),
     thread_get_message(_).
 
-:- initialization(server(8080), main).
 
 home(Request) :-
     http_reply_file('sudoku.html', [], Request).
+
+style_handler(Request) :-
+    http_reply_file('style.css', [mine_type(text/css)], Request).
 
 solve_handler(Request) :-
     catch(
@@ -29,12 +34,13 @@ solve_handler(Request) :-
         fail
     ), !,
     reply_json_dict(_{status:success, grid:Solution}).
+
 solve_handler(_Request) :-
     reply_json_dict(_{status:error,
                       message:'Please enter a valid Sudoku with no conflicting clues.'},
                     [status(400)]).
 
-% Convert the submitted 0-filled puzzle into CLP(FD) variables,
+% Convert the submitted 0-filled puzzle into constraints Logic Programming variables,
 % then apply the normal Sudoku constraints.
 sudoku_solution(Grid, Solution) :-
     valid_grid(Grid),
