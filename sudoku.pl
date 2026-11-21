@@ -8,6 +8,7 @@
 :- http_handler(root(.), home, []).
 :- http_handler(root(solve), solve_handler, [method(post)]).
 :- http_handler(root('style.css'), style_handler, []).
+:- http_handler(root('script.js'), script_handler, []).
 
 % Inititalize the http server on port 8080
 :- initialization(server(8080), main).
@@ -22,7 +23,10 @@ home(Request) :-
     http_reply_file('sudoku.html', [], Request).
 
 style_handler(Request) :-
-    http_reply_file('style.css', [mine_type(text/css)], Request).
+    http_reply_file('style.css', [mime_type(text/css)], Request).
+
+script_handler(Request) :-
+    http_reply_file('script.js', [mime_type(text/javascript)], Request).
 
 solve_handler(Request) :-
     catch(
